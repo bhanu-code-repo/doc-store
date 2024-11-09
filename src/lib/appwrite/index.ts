@@ -1,5 +1,7 @@
 // src/lib/appwrite/index.ts
-import { Account, Client, Databases } from "node-appwrite";
+"use server";
+
+import { Account, Avatars, Client, Databases, Storage } from "node-appwrite";
 import { appwriteConfig } from "./config";
 import { cookies } from "next/headers";
 
@@ -19,9 +21,7 @@ import { cookies } from "next/headers";
 export const createSessionClient = async () => {
   // Create a new Appwrite client instance
   const client = new Client()
-    // Set the endpoint URL for the Appwrite client using the configuration
     .setEndpoint(appwriteConfig.endpointUrl)
-    // Set the project ID for the Appwrite client using the configuration
     .setProject(appwriteConfig.projectId);
 
   // Attempt to retrieve the Appwrite session from cookies
@@ -48,4 +48,44 @@ export const createSessionClient = async () => {
   };
 };
 
-export const createAdminClient = async () => {};
+/**
+ * Creates an Appwrite client instance with the admin key from the configuration.
+ *
+ * The client is initialized with the endpoint URL and project ID from the
+ * configuration. The admin key from the configuration is used to set the
+ * key for the client, which is used for authentication.
+ *
+ * The function returns an object with `account`, `databases`, `storage`, and
+ * `avatar` getters, which provide access to the Appwrite Account, Databases,
+ * Storage, and Avatars services.
+ *
+ * @returns An object with `account`, `databases`, `storage`, and `avatar`
+ * getters for Appwrite services.
+ */
+export const createAdminClient = async () => {
+  // Create a new Appwrite client instance
+  const client = new Client()
+    .setEndpoint(appwriteConfig.endpointUrl)
+    .setProject(appwriteConfig.projectId)
+    .setKey(appwriteConfig.secretKey);
+
+  // Return an object with `account` and `databases` getters
+  return {
+    // Getter for the Appwrite Account service
+    get account() {
+      return new Account(client);
+    },
+    // Getter for the Appwrite Databases service
+    get databases() {
+      return new Databases(client);
+    },
+    // Getter for the Appwrite Storage service
+    get storage() {
+      return new Storage(client);
+    },
+    // Getter for the Appwrite Avatars service
+    get avatar() {
+      return new Avatars(client);
+    },
+  };
+};
